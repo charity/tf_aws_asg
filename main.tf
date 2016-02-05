@@ -30,14 +30,15 @@ resource "aws_autoscaling_group" "main_asg" {
   depends_on = ["aws_launch_configuration.launch_config"]
   name = "${var.asg_name}"
 
-  // The chosen availability zones *must* match the AZs the VPC subnets are
-  //   tied to.
-  availability_zones = ["${var.az1}", "${var.az2}"]
-  vpc_zone_identifier = ["${var.subnet_az1}","${var.subnet_az2}"]
-
+  // just specify all the public vpc zones
+  vpc_zone_identifier = ["${aws_subnet.public.*.id}"]
 
   // Uses the ID from the launch config created above
   launch_configuration = "${aws_launch_configuration.launch_config.id}"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   max_size = "${var.asg_number_of_instances}"
   min_size = "${var.asg_minimum_number_of_instances}"
